@@ -8,9 +8,19 @@ class FileStorage:
     __file_path = 'file.json'
     __objects = {}
 
-    def all(self):
+    def all(self, cls=None):
         """Returns a dictionary of models currently in storage"""
-        return FileStorage.__objects
+        if cls is not None:
+            # if class is specified, this returns a
+            # dictionary of objects belonging to the class
+            class_dict = {}
+            for key, value in self.__objects.items():
+                if type(value).__name__ == cls.__name__:
+                    class_dict[key] = value
+            return class_dict
+        else:
+            # Otherwise, returns the _objects dictionary
+            return FileStorage.__objects
 
     def new(self, obj):
         """Adds new object to storage dictionary"""
@@ -36,15 +46,30 @@ class FileStorage:
         from models.review import Review
 
         classes = {
-                    'BaseModel': BaseModel, 'User': User, 'Place': Place,
-                    'State': State, 'City': City, 'Amenity': Amenity,
-                    'Review': Review
-                  }
+            'BaseModel': BaseModel, 'User': User, 'Place': Place,
+            'State': State, 'City': City, 'Amenity': Amenity,
+            'Review': Review
+        }
         try:
             temp = {}
             with open(FileStorage.__file_path, 'r') as f:
                 temp = json.load(f)
                 for key, val in temp.items():
-                        self.all()[key] = classes[val['__class__']](**val)
+                    self.all()[key] = classes[val['__class__']](**val)
         except FileNotFoundError:
             pass
+
+    def delete(self, obj=None):
+        """ Deletes an object from _objects"""
+        if obj is None:
+            pass
+        else:
+            try:
+                del self.__objects["{}.{}".format(type(obj).__name__, obj.id)]
+            except (AttributeError, KeyError):
+                pass
+
+    def close(self):
+        """ Deserializes the pythin objects """
+
+        self.reload()
