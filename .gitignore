@@ -1,3 +1,2 @@
-/__pycache__
-
-\__pycache__
+# Use forward slash (/) for the path
+path = "/__pycache__"
